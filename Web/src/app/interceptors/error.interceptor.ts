@@ -49,6 +49,7 @@ export class ErrorInterceptor implements HttpInterceptor {
             break;
           }
         }
+        //Me to switch den erxetai pote s auto to shmeio
         return throwError(error);
       })
     )
