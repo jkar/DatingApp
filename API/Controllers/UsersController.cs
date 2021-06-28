@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace API.Controllers
 {
 
+    [Authorize]
     public class UsersController : BaseApiController
     {
         public readonly DataContext _context;
@@ -20,14 +21,14 @@ namespace API.Controllers
 
         //    api/users
         [HttpGet]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers() 
         {
             return await _context.Users.ToListAsync(); 
         }
 
         //    api/users/3
-        [Authorize]
+        //[Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<AppUser>> GetUser(int id) 
         {
