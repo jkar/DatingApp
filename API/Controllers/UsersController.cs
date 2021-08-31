@@ -13,6 +13,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using API.Extensions;
 using System;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -38,7 +39,8 @@ namespace API.Controllers
         //    api/users
         [HttpGet]
         //[AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers() 
+        //public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) 
         {
         //1st way
             //return await _context.Users.ToListAsync(); 
@@ -47,7 +49,9 @@ namespace API.Controllers
             //var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
             //return Ok(usersToReturn);
         //3rd way
-            var users = await _userRepository.GetMembersAsync();
+            var users = await _userRepository.GetMembersAsync(userParams);
+            Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+
             return Ok(users);
         }
 
