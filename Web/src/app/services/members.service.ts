@@ -14,6 +14,7 @@ import { UseParams } from '../models/userParams';
 export class MembersService {
   baseUrl = environment.base_url;
   members: Member[] = [];
+  memberCache = new Map();
  
   //Pleon travaw to token k to pernaw se kathe request me to jwt interceptor
   //httpOptions = {};
@@ -33,13 +34,30 @@ export class MembersService {
     //   //To of γυρναει observable
     //   return of(this.members);
     // }
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // Στο memberCache θα περνάω κάθε φορά που τραβάω members με φιλτρα και τα σώζω σ 'ενα Map με key τα στοιχεία των filter (Object.values ...)
+    //στο pipe.map, Aρχικά βλέπω αν έχω ήδη στο Map (memberCache) το key με τα filters apo to useParams, αν τα χω τα γυρνάω απο το Map (memberCache)
+    //και δεν κάνω httpRequest.
+    console.log('up', Object.values(userParams).join('-'));
+    // console.log('mcache', this.memberCache);
+    var response = this.memberCache.get(Object.values(userParams).join('-'));
+    if (response) {
+      //To of γυρναει observable
+      return of(response);
+    }
+
     let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize);
     params = params.append('minAge', userParams.minAge.toString());
     params = params.append('maxAge', userParams.maxAge.toString());
     params = params.append('gender', userParams.gender);
     params = params.append('orderBy', userParams.orderBy);
 
-    return this.getPaginatedResult<Member[]>(this.baseUrl + 'Users', params);
+    return this.getPaginatedResult<Member[]>(this.baseUrl + 'Users', params)
+      .pipe(map(res => {
+        this.memberCache.set(Object.values(userParams).join('-'), res);
+        return res;
+      }));
       //   map(members => {
       //   this.members = members;
       //   return members;
