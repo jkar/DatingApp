@@ -39,7 +39,7 @@ export class MembersService {
     // Στο memberCache θα περνάω κάθε φορά που τραβάω members με φιλτρα και τα σώζω σ 'ενα Map με key τα στοιχεία των filter (Object.values ...)
     //στο pipe.map, Aρχικά βλέπω αν έχω ήδη στο Map (memberCache) το key με τα filters apo to useParams, αν τα χω τα γυρνάω απο το Map (memberCache)
     //και δεν κάνω httpRequest.
-    console.log('up', Object.values(userParams).join('-'));
+    // console.log('up', Object.values(userParams).join('-'));
     // console.log('mcache', this.memberCache);
     var response = this.memberCache.get(Object.values(userParams).join('-'));
     if (response) {
@@ -67,8 +67,22 @@ export class MembersService {
   getMember(username: string) {
     //return this.http.get<Member>(this.baseUrl + '/Users' + username, this.httpOptions);
 
-    const member = this.members.find(x => x.username === username);
-    if (member !== undefined) return of(member);
+    // const member = this.members.find(x => x.username === username);
+    // if (member !== undefined) return of(member);
+
+    //!!!!!!!
+    //kanw concat ta arrays tou memberCache me value to result gia na psaxnw me to find to member me basi to username, tha xei duplicates sto concatenated alla den mas
+    //peirazei sto find giati vriskei to prwto panta
+    const member = [...this.memberCache.values()]
+      .reduce((arr, elem)=> {
+        return arr.concat(elem.result);
+      }, [])
+      .find((m: Member) => m.username === username);
+      if (member) {
+        console.log('m', member);
+        return of(member);
+      }
+
 
     return this.http.get<Member>(this.baseUrl + 'Users/' + username);
   }
