@@ -82,7 +82,8 @@ namespace API.Controllers
         {
             //1st way this gives us the user's useranme from the token that the API uses to authenticate 
             //on POST the 2nd way
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            // var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = User.GetUsername();
 
             var user = await _userRepository.GetUserByUsernameAsync(username);
             //source ->  to
