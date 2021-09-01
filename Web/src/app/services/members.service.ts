@@ -1,11 +1,13 @@
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Member } from '../models/member';
 import { PaginatedResult } from '../models/pagination';
+import { User } from '../models/user';
 import { UseParams } from '../models/userParams';
+import { AccountService } from './account.service';
 
 
 @Injectable({
@@ -15,16 +17,36 @@ export class MembersService {
   baseUrl = environment.base_url;
   members: Member[] = [];
   memberCache = new Map();
+  user: User;
+  userParams: UseParams;
  
   //Pleon travaw to token k to pernaw se kathe request me to jwt interceptor
   //httpOptions = {};
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,
+    private accountService: AccountService) {
     // this.httpOptions = {
     //   headers : new HttpHeaders ({
     //     Authorization:  'Bearer ' + JSON.parse(localStorage.getItem('user'))?.token
     //     })
     // }
+    this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
+      this.user = user;
+      this.userParams = new UseParams(user);
+    });
+   }
+
+   getUserParams() {
+     return this.userParams;
+   }
+
+   setUserParams(params: UseParams) {
+     this.userParams = params;
+   }
+
+   resetParams() {
+     this.userParams = new UseParams(this.user);
+     return this.userParams;
    }
 
   getMembers(userParams: UseParams) {
