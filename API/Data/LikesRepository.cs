@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,24 +23,25 @@ namespace API.Data
             return await _context.Likes.FindAsync(sourceUserId, likedUserId);
         }
 
-        public async Task<IEnumerable<LikeDTO>> GetUserLikes(string predicate, int userId)
+        public async Task<PagedList<LikeDTO>> GetUserLikes(LikesParams likesParams)
+        // public async Task<IEnumerable<LikeDTO>> GetUserLikes(string predicate, int userId)
         {
             var users = _context.Users.OrderBy(u => u.Username).AsQueryable();
             var likes = _context.Likes.AsQueryable();
 
-            if (predicate == "liked")
+            if (likesParams.Predicate == "liked")
             {
-                likes = likes.Where(like => like.SourceUserId == userId);
+                likes = likes.Where(like => like.SourceUserId == likesParams.UserId);
                 users = likes.Select(like => like.LikedUser);
             }
 
-            if (predicate == "likedBy")
+            if (likesParams.Predicate == "likedBy")
             {
-                likes = likes.Where(like => like.LikedUserId == userId);
+                likes = likes.Where(like => like.LikedUserId == likesParams.UserId);
                 users = likes.Select(like => like.SourceUser);
             }
 
-            return await users.Select(user => new LikeDTO
+            var likedUsers = users.Select(user => new LikeDTO
             {
                 Username = user.Username,
                 KnownAs = user.KnownAs,
@@ -47,7 +49,9 @@ namespace API.Data
                 PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain).Url,
                 City = user.City,
                 Id = user.Id
-            }).ToListAsync();
+            });
+
+            return await PagedList<LikeDTO>.CreateAsync(likedUsers, likesParams.PageNumber, likesParams.PageSize);
         }
 
         public async Task<AppUser> GetUserWithLikes(int userId)
