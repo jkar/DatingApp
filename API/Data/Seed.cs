@@ -1,18 +1,17 @@
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
 {
     public class Seed
     {
-        public static async Task SeedUsers (DataContext context)
+        public static async Task SeedUsers (UserManager<AppUser> userManager)
         {
-            if (await context.Users.AnyAsync()) {
+            if (await userManager.Users.AnyAsync()) {
                 return;
             }
 
@@ -20,17 +19,10 @@ namespace API.Data
             var users = JsonSerializer.Deserialize<List<AppUser>>(userData);
             foreach( var user in users )
             {
-                using var hmac = new HMACSHA512();
-                user.Username = user.Username.ToLower();
-                user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("123"));
-                user.PasswordSalt = hmac.Key;
+                user.UserName = user.UserName.ToLower();
 
-                // ********* OTAN KANOUME ADD DE XREIAZETAI ASYNC!!! 
-                //DEN YPARXEI EPAFI ME TI BASI ,GINETAI APLA TRACKING
-                context.Users.Add(user);
+                await userManager.CreateAsync(user, "Pa$$w0rd");
             }
-
-            await context.SaveChangesAsync();
         }
     }
 }

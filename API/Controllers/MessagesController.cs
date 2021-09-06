@@ -43,8 +43,8 @@ namespace API.Controllers
             {
                 Sender = sender,
                 Recipient = recipient,
-                SenderUsername = sender.Username,
-                RecipientUsername = recipient.Username,
+                SenderUsername = sender.UserName,
+                RecipientUsername = recipient.UserName,
                 Content = createMessageDto.Content
             };
 
@@ -84,16 +84,16 @@ namespace API.Controllers
             var message = await _messageRepository.GetMessage(id);
 
             //an to username sto parameter den exei sxesi me ton sender i ton recipient tote den borei na to diagrapsei autos o xristis
-            if (message.Sender.Username != username && message.Recipient.Username != username) return Unauthorized();
+            if (message.Sender.UserName != username && message.Recipient.UserName != username) return Unauthorized();
 
             //an to diagrafei autos pou to steile
-            if (message.Sender.Username == username)
+            if (message.Sender.UserName == username)
             {
                 message.SenderDeleted = true;
             }
 
             //an to diagrafei aytos pou to eleave
-            if (message.Recipient.Username == username)
+            if (message.Recipient.UserName == username)
             {
                 message.RecipientDeleted = true;
             }

@@ -50,7 +50,7 @@ namespace API.Controllers
             //return Ok(usersToReturn);
         //3rd way
             var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
-            userParams.CurrentUsername = user.Username;
+            userParams.CurrentUsername = user.UserName;
             if (string.IsNullOrEmpty(userParams.Gender))
             {
                 userParams.Gender = user.Gender == "male" ? "female" : "male";
@@ -131,7 +131,7 @@ namespace API.Controllers
             {
                 //return _mapper.Map<PhotoDto>(photo);
                 //ΕΤΣΙ επιστρεφει 201 που είνα το statusCode για post και με το GetUser καλέι το [HttpGet("username")] για να φέρει τον χρήστη
-                return CreatedAtRoute("GetUser", new { username =  user.Username }, _mapper.Map<PhotoDto>(photo));
+                return CreatedAtRoute("GetUser", new { username =  user.UserName }, _mapper.Map<PhotoDto>(photo));
             }
 
             return BadRequest("Problem adding photo");
