@@ -1,4 +1,5 @@
-<div class="row" *ngIf="member">
+<!-- <div class="row" *ngIf="member"> -->
+<div class="row">
     <div class="col-4">
         <div class="card">
             <img class="card-img-top img-thumbnail"
@@ -23,7 +24,8 @@
             <div class="card-footer">
                 <div class="btn-group d-flex">
                     <button class="btn btn-primary">Like</button>
-                    <button class="btn btn-success">Message</button>
+                    <!-- sto click pernaw to tabIndex = 3 poy einai gia ta messages -->
+                    <button class="btn btn-success" (click)="selectTab(3)">Message</button>
                 </div>
             </div>
         </div>
