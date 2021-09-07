@@ -21,25 +21,21 @@ namespace API.Controllers
     [Authorize]
     public class UsersController : BaseApiController
     {
-        //public readonly DataContext _context;
         public readonly IUserRepository _userRepository;
         public readonly IMapper _mapper;
 
         public readonly IPhotoService _photoService;
 
-        //public UsersController(DataContext context)
         public UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService)
         {
-            //_context = context;
             _mapper = mapper;
             _userRepository = userRepository;
             _photoService = photoService;
         }
 
-        //    api/users
+        //api/users
+        // [Authorize(Roles = "Admin")]
         [HttpGet]
-        //[AllowAnonymous]
-        //public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
         public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) 
         {
         //1st way
@@ -62,8 +58,8 @@ namespace API.Controllers
             return Ok(users);
         }
 
-        //    api/users/3
-        //[Authorize]
+        //api/users/3
+        // [Authorize(Roles = "Member")]
         [HttpGet("{username}", Name = "GetUser")]
         public async Task<ActionResult<MemberDto>> GetUser(string username) 
         {
@@ -116,7 +112,6 @@ namespace API.Controllers
             {
                 Url = result.SecureUrl.AbsoluteUri,
                 PublicId = result.PublicId
-                //PublicId = Int16.Parse(result.PublicId)
             };
 
             // check if this is the first photo to upload, if true set it to main
