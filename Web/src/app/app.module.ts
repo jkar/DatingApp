@@ -29,6 +29,8 @@ import { DateInputComponent } from './_forms/date-input/date-input.component';
 import { MemberMessagesComponent } from './members/member-messages/member-messages.component';
 import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { HasRolesDirective } from './_directives/has-roles.directive';
+import { UserManagementComponent } from './admin/user-management/user-management.component';
+import { PhotoManagementComponent } from './admin/photo-management/photo-management.component';
 
 
 @NgModule({
@@ -51,7 +53,9 @@ import { HasRolesDirective } from './_directives/has-roles.directive';
     DateInputComponent,
     MemberMessagesComponent,
     AdminPanelComponent,
-    HasRolesDirective
+    HasRolesDirective,
+    UserManagementComponent,
+    PhotoManagementComponent
   ],
   imports: [
     BrowserModule,
