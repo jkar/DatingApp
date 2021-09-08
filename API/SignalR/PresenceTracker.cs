@@ -6,6 +6,7 @@ namespace API.SignalR
 {
     public class PresenceTracker
     {
+        // key - usernames => value - list of connections  
         private static readonly Dictionary<string, List<string>> OnLineUsers = new Dictionary<string, List<string>>();
 
         public Task UserConnected(string username, string connectionId)

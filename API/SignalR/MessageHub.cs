@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
@@ -29,6 +31,7 @@ namespace API.SignalR
         var otherUser = httpContext.Request.Query["user"].ToString();
         var groupName = this.GetGroupName(Context.User.GetUsername(), otherUser);
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        await AddToGroup(groupName);
 
         var messages = await _messageRepository.GetMessageThread(Context.User.GetUsername(), otherUser);
 
@@ -37,6 +40,7 @@ namespace API.SignalR
 
     public override async Task OnDisconnectedAsync(System.Exception exception)
     {
+        await RemoveFromMessageGroup(Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
 
@@ -63,14 +67,46 @@ namespace API.SignalR
             Content = createMessageDto.Content
         };
 
+        var groupName = GetGroupName(sender.UserName, recipient.UserName);
+
+        var group = await _messageRepository.GetMessageGroup(groupName);
+
+        if (group.Connections.Any(x => x.Username == recipient.UserName))
+        {
+            message.DateRead = DateTime.UtcNow;
+        }
+
         _messageRepository.AddMessage(message);
 
         //kanei mapping apo to message (type Message) se MessageDto object
         if (await _messageRepository.SaveAllAsync())
         {
-            var group = GetGroupName(sender.UserName, recipient.UserName);
-            await Clients.Group(group).SendAsync("NewMessage", _mapper.Map<MessageDto>(message));
+            await Clients.Group(groupName).SendAsync("NewMessage", _mapper.Map<MessageDto>(message));
         }
+    }
+
+    private async Task<bool> AddToGroup(string groupName)
+    {
+        var group = await _messageRepository.GetMessageGroup(groupName);
+        var connection = new Connection(Context.ConnectionId, Context.User.GetUsername());
+
+        if (group == null)
+        {
+            group = new Group(groupName);
+            _messageRepository.addGroup(group);
+        }
+
+        group.Connections.Add(connection);
+
+        return await _messageRepository.SaveAllAsync();
+    }
+
+    //To conectionId argotera tha to pairnei apo to Context
+    private async Task RemoveFromMessageGroup(string connectionId)
+    {
+        var connection = await _messageRepository.GetConnection(connectionId);
+        _messageRepository.RemoveConnection(connection);
+        await _messageRepository.SaveAllAsync();
     }
 
     //Onomazw to group me alphabhtikh seira
