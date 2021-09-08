@@ -21,5 +21,6 @@ namespace API.Interfaces
         // Task<IEnumerable<MemberDto>> GetMembersAsync();
         Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
         Task<MemberDto> GetMemberAsync(string username);
+        Task<string> GetUserGender(string username);
     }
 }
