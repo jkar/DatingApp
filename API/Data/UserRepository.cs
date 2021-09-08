@@ -91,11 +91,11 @@ namespace API.Data
             .ToListAsync();
         }
 
-        public async Task<bool> SaveAllAsync()
-        {
-            //an swthike estw k ena stoixeio tha gyrisei ton arithmo twn allagwn sti vasi
-            return await _context.SaveChangesAsync() > 0;
-        }
+        // public async Task<bool> SaveAllAsync()
+        // {
+        //     //an swthike estw k ena stoixeio tha gyrisei ton arithmo twn allagwn sti vasi
+        //     return await _context.SaveChangesAsync() > 0;
+        // }
 
         public void Update(AppUser user)
         {
