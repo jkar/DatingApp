@@ -30,11 +30,21 @@ export class PresenceService {
       .catch(error => console.log(error));
 
       this.hubConnection.on('UserIsOnLine', username => {
-        this.toastr.info(username + ' has connected');
+        //den to krataw san functionality
+        // this.toastr.info(username + ' has connected');
+
+        this.onlineUsers$.pipe(take(1)).subscribe(usernames => {
+          this.onlineUsersSource.next([...usernames, username]);
+        });
       });
 
       this.hubConnection.on('UserIsOffLine', username => {
-        this.toastr.warning(username + ' has disconnected');
+        // //den to krataw san functionality
+        // this.toastr.warning(username + ' has disconnected');
+
+        this.onlineUsers$.pipe(take(1)).subscribe(usernames => {
+          this.onlineUsersSource.next([...usernames.filter(x => x !== username)]);
+        });
       });
 
       this.hubConnection.on('GetOnlineUsers', (usernames: string[]) => {
