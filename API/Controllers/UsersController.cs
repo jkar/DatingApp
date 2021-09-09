@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using API.Extensions;
 using System;
 using API.Helpers;
-using API.Services;
 
 namespace API.Controllers
 {
@@ -22,14 +21,15 @@ namespace API.Controllers
     [Authorize]
     public class UsersController : BaseApiController
     {
-        public readonly IUnitOfWork _unitOfWork;
+        public readonly IUserRepository _userRepository;
         public readonly IMapper _mapper;
+
         public readonly IPhotoService _photoService;
 
-        public UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
+        public UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService)
         {
             _mapper = mapper;
-            _unitOfWork = unitOfWork;
+            _userRepository = userRepository;
             _photoService = photoService;
         }
 
@@ -41,20 +41,18 @@ namespace API.Controllers
         //1st way
             //return await _context.Users.ToListAsync(); 
         //2nd way    
-            //var users = await _unitOfWork.UserRepository.GetUsersAsync();
+            //var users = await _userRepository.GetUsersAsync();
             //var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
             //return Ok(usersToReturn);
         //3rd way
-            // var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-            // userParams.CurrentUsername = user.UserName;
-            var gender = await _unitOfWork.UserRepository.GetUserGender(User.GetUsername());
-            userParams.CurrentUsername = User.GetUsername();
+            var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+            userParams.CurrentUsername = user.UserName;
             if (string.IsNullOrEmpty(userParams.Gender))
             {
-                userParams.Gender = gender == "male" ? "female" : "male";
+                userParams.Gender = user.Gender == "male" ? "female" : "male";
             }
 
-            var users = await _unitOfWork.UserRepository.GetMembersAsync(userParams);
+            var users = await _userRepository.GetMembersAsync(userParams);
             Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
             return Ok(users);
@@ -68,11 +66,11 @@ namespace API.Controllers
         //1st way
             //return await _context.Users.FindAsync(id);
         //2nd way
-            //var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            //var user = await _userRepository.GetUserByUsernameAsync(username);
             //var userToReturn = _mapper.Map<MemberDto>(user);
             //return Ok(userToReturn);
         //3rd way
-            return await _unitOfWork.UserRepository.GetMemberAsync(username);
+            return await _userRepository.GetMemberAsync(username);
         }
 
         [HttpPut]
@@ -83,16 +81,16 @@ namespace API.Controllers
             // var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var username = User.GetUsername();
 
-            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            var user = await _userRepository.GetUserByUsernameAsync(username);
             //source ->  to
             _mapper.Map(memberUpdateDTO, user);
             //alliws manually p.x
             //user.City = memberUpdateDTO.City;
             //.....
 
-            _unitOfWork.UserRepository.Update(user);
+            _userRepository.Update(user);
 
-            if (await _unitOfWork.Complete()) return NoContent();
+            if (await _userRepository.SaveAllAsync()) return NoContent();
 
             return BadRequest("Failed to update user");
         }
@@ -102,7 +100,7 @@ namespace API.Controllers
         {
             //2nd way, (with ClaimsPrincipalExtensions) this gives us the user's useranme from the token that the API uses to authenticate 
             var username = User.GetUsername();
-            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            var user = await _userRepository.GetUserByUsernameAsync(username);
 
             var result = await _photoService.AddPhotoAsync(file);
 
@@ -124,7 +122,7 @@ namespace API.Controllers
 
             user.Photos.Add(photo);
 
-            if (await _unitOfWork.Complete())
+            if (await _userRepository.SaveAllAsync())
             {
                 //return _mapper.Map<PhotoDto>(photo);
                 //ΕΤΣΙ επιστρεφει 201 που είνα το statusCode για post και με το GetUser καλέι το [HttpGet("username")] για να φέρει τον χρήστη
@@ -138,7 +136,7 @@ namespace API.Controllers
         public async Task<ActionResult> SetMainPhoto (int photoId)
         {
             //(with ClaimsPrincipalExtensions) this gives us the user's useranme from the token that the API uses to authenticate -> User.GetUsername()
-            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
+            var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
 
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
@@ -155,7 +153,7 @@ namespace API.Controllers
 
             photo.IsMain = true;
 
-            if (await _unitOfWork.Complete())
+            if (await _userRepository.SaveAllAsync())
             {
                 return NoContent();
             }
@@ -167,7 +165,7 @@ namespace API.Controllers
         public async Task<ActionResult> DeletePhoto (int photoId)
         {
             //(with ClaimsPrincipalExtensions) this gives us the user's useranme from the token that the API uses to authenticate -> User.GetUsername()
-            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
+            var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
 
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
@@ -189,7 +187,7 @@ namespace API.Controllers
 
             user.Photos.Remove(photo);
 
-            if (await _unitOfWork.Complete())
+            if (await _userRepository.SaveAllAsync())
                 {
                     return Ok();
                 }

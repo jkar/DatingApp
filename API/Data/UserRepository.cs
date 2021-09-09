@@ -84,14 +84,6 @@ namespace API.Data
             .SingleOrDefaultAsync(x => x.UserName == username);
         }
 
-        public async Task<string> GetUserGender(string username)
-        {
-            return await _context.Users
-                .Where(x => x.UserName == username)
-                .Select(x => x.Gender)
-                .FirstOrDefaultAsync();
-        }
-
         public async Task<IEnumerable<AppUser>> GetUsersAsync()
         {
             return await _context.Users
@@ -99,11 +91,11 @@ namespace API.Data
             .ToListAsync();
         }
 
-        // public async Task<bool> SaveAllAsync()
-        // {
-        //     //an swthike estw k ena stoixeio tha gyrisei ton arithmo twn allagwn sti vasi
-        //     return await _context.SaveChangesAsync() > 0;
-        // }
+        public async Task<bool> SaveAllAsync()
+        {
+            //an swthike estw k ena stoixeio tha gyrisei ton arithmo twn allagwn sti vasi
+            return await _context.SaveChangesAsync() > 0;
+        }
 
         public void Update(AppUser user)
         {

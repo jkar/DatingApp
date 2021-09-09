@@ -22,10 +22,10 @@ namespace API.Helpers
             }
             //to GetUsername() to travaw apo ta extensions gia na mou dwsei t username apo to token
             var userId = resultContext.HttpContext.User.GetUserId();
-            var uow = resultContext.HttpContext.RequestServices.GetService<IUnitOfWork>();
-            var user = await uow.UserRepository.GetUserByIdAsync(userId);
-            user.LastActive = DateTime.UtcNow;
-            await uow.Complete();
+            var repo = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
+            var user = await repo.GetUserByIdAsync(userId);
+            user.LastActive = DateTime.Now;
+            await repo.SaveAllAsync();
         }
     }
 }
