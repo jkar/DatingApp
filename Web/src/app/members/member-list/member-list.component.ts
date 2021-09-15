@@ -22,6 +22,8 @@ export class MemberListComponent implements OnInit {
   genderList = [{ value: 'male', display: 'Males' }, { value: 'female', display: 'Females' }];
   // members$: Observable<Member[]>;
 
+  //travaei ta userParams(filtra) apo to service gia na borei na fernei ta members analoga me ta filtra (exei mesa kai ta stoixeia gia to pagination (PageSize, PageNumber))
+  //sto service o constructor tou UserParams exei ola ta default stoixeia gia pagination k filtering ,thelei mono to user.gender gia na fernei ta anapoda fulla
   constructor(private memberService: MembersService) { 
     this.userParams = this.memberService.getUserParams();
   }

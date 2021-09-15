@@ -53,9 +53,11 @@ namespace API.Data
                 // .AsNoTracking()
                 // .ToListAsync();
 
+            //φερνει ολους τους χρηστες εκτος απο τον εαυτο του + gender (που απο το controller ζηταει το αντιθετο)
             query = query.Where(u => u.UserName != userParams.CurrentUsername);
             query = query.Where(u => u.Gender == userParams.Gender);
 
+            //Περναει τα φιλτρα για ελαχιστη, μεγιστη ηλικια
             var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
             var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
 
@@ -67,6 +69,7 @@ namespace API.Data
                 _=> query.OrderByDescending(u => u.LastActive)
             };
 
+            //εδω γινεται execute to query Με pagintation με βαση τα pageNumber, pageSize apo ta query params
             return await PagedList<MemberDto>.CreateAsync(query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider).AsNoTracking(), 
                                                         userParams.PageNumber, 
                                                         userParams.PageSize);

@@ -27,6 +27,8 @@ export class MemberMessagesComponent implements OnInit {
     //     this.messageForm.reset();
     //   });
 
+    //to service->method kalei methodo sto messageHub->SendMessage k tin kanei invoke, auto gurnaei Promise
+    //giauto meta exei then, pou kanei reset tin forma
     this.messageService.sendMessage(this.username, this.messageContent)
     .then(() => {
       this.messageForm.reset();

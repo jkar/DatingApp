@@ -18,6 +18,8 @@ export class AppComponent implements OnInit {
     this.setCurrentUser();
   }
 
+  //me to pou xekinaei to app, vlepei an sto localstorage uparxei o user kai sthnei to ConnectionHub gia tin online interaction metaxu twn users
+  //kai gia na enimerwsei to curentUser$ pou tha purodothsei tous subscribers gia na emfanisoun oti xreiazetai san loggedIn
   setCurrentUser() {
     const user: User = JSON.parse(localStorage.getItem("user"));
     if (user) {

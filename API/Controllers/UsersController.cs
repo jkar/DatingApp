@@ -35,24 +35,34 @@ namespace API.Controllers
 
         //api/users
         // [Authorize(Roles = "Admin")]
+        //φερνει τους χρηστες με βαση τα userParams (φιλτρα) που βρίσκονται στο query params
+        //επισης στα query params εχει τα pageNumber, pageSize gia pagination
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) 
         {
         //1st way
             //return await _context.Users.ToListAsync(); 
-        //2nd way    
+        //2nd way
             //var users = await _userRepository.GetUsersAsync();
             //var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
             //return Ok(usersToReturn);
         //3rd way
+
+            //φερνει τον χρηστη που κανει το request με βαση το username tou που το βρισκει απο to Token-claims
             var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+            //στα userParams ενημερωνει το username
             userParams.CurrentUsername = user.UserName;
             if (string.IsNullOrEmpty(userParams.Gender))
             {
+                //για να ζητησει στα φιλτρα τ αντιθετο φυλλο, τραβαει το φυλλο του χρηστη
                 userParams.Gender = user.Gender == "male" ? "female" : "male";
             }
 
+            //gyrnaei tous xristes me vasi ta filtra kai me pagination me vasi ta pageSize ,pageNumber (query params)
             var users = await _userRepository.GetMembersAsync(userParams);
+
+            //περναει στο response  headers με key pagination
+            //kai value π.χ Headers -> pagination : {"currentPage":1,"itemsPerPage":10,"totalItems":1,"totalPages":1}
             Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
             return Ok(users);
@@ -60,6 +70,7 @@ namespace API.Controllers
 
         //api/users/3
         // [Authorize(Roles = "Member")]
+        //me vasi to username fernei ton antistoixo user
         [HttpGet("{username}", Name = "GetUser")]
         public async Task<ActionResult<MemberDto>> GetUser(string username) 
         {
@@ -73,6 +84,7 @@ namespace API.Controllers
             return await _userRepository.GetMemberAsync(username);
         }
 
+        //βρισκει τον user me vasi to username pou τραβάει απο το token-claim, και τον κάνει update 
         [HttpPut]
         public async Task<ActionResult> UpdateUser(MemberUpdateDTO memberUpdateDTO) 
         {
@@ -81,6 +93,7 @@ namespace API.Controllers
             // var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var username = User.GetUsername();
 
+            // φερνει τον χρηστη με βαση το username
             var user = await _userRepository.GetUserByUsernameAsync(username);
             //source ->  to
             _mapper.Map(memberUpdateDTO, user);
@@ -95,13 +108,20 @@ namespace API.Controllers
             return BadRequest("Failed to update user");
         }
 
+        //swzei tin photo sto cloudinary kai ta metadata (url, publicId) sto table Photo
+        //vriskei to username klasika apo to token-claim k antistoixa meta ton user
+        //an einai h prwti photo tou xristi ,thn kanei main
         [HttpPost("add-photo")]
         public async Task<ActionResult<PhotoDto>> AddPhoto (IFormFile file)
         {
             //2nd way, (with ClaimsPrincipalExtensions) this gives us the user's useranme from the token that the API uses to authenticate 
+            
+            //το username το βρισκει απο to Token-claims
             var username = User.GetUsername();
+            // φερνει τον χρηστη με βαση το username
             var user = await _userRepository.GetUserByUsernameAsync(username);
 
+            //kanei upload tin photo sto cloudinary
             var result = await _photoService.AddPhotoAsync(file);
 
             if (result.Error != null) {
@@ -120,8 +140,10 @@ namespace API.Controllers
                 photo.IsMain = true;
             }
 
+            //κανει tracking sto table Photo ta stoixeia tis photografias (url , publicId) για να μπορει να την τραβάει απο το cloudinary μ αυτες τις πληροφορίες
             user.Photos.Add(photo);
 
+            //twra kanei save ta stoixeia sto table
             if (await _userRepository.SaveAllAsync())
             {
                 //return _mapper.Map<PhotoDto>(photo);
@@ -132,27 +154,34 @@ namespace API.Controllers
             return BadRequest("Problem adding photo");
         }
 
+        //βρισκει την photo με βαση to photoId, κανει false αυτη που ηταν main και θετει Main την phοto που θελει
         [HttpPut("set-main-photo/{photoId}")]
         public async Task<ActionResult> SetMainPhoto (int photoId)
         {
             //(with ClaimsPrincipalExtensions) this gives us the user's useranme from the token that the API uses to authenticate -> User.GetUsername()
+            //φερνει τον χρηστη που κανει το request με βαση το username tou που το βρισκει απο to Token-claims
             var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
 
+            //βρισκει την φωτο apo to relation me ton user me vasi to photoId poy einai stin parametro tiw methodou
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
+            //an einai idi main i photo stelenei mnm 
             if (photo.IsMain)
             {
                 return BadRequest("This is already your main photo");
             }
 
+            // vriskei tin photo pou einai main kai tin thetei na min einai
             var currentMain = user.Photos.FirstOrDefault(x => x.IsMain);
             if (currentMain != null)
             {
                 currentMain.IsMain = false;
             }
 
+            //thetei main tin photo pou thelei
             photo.IsMain = true;
 
+            //kanei to save stin vasi
             if (await _userRepository.SaveAllAsync())
             {
                 return NoContent();
@@ -161,22 +190,28 @@ namespace API.Controllers
             return BadRequest("Failed to set main photo");
         }
 
+        //me vasi to photoId vriskei tin photo, k meta me vasi to publicId tin diagrafei apo to cloudinary
+        //meta tin diagrafei k apo tin vasi (Photo table)
+        //mono an den einai main diagrafetai
         [HttpDelete("delete-photo/{photoId}")]
         public async Task<ActionResult> DeletePhoto (int photoId)
         {
             //(with ClaimsPrincipalExtensions) this gives us the user's useranme from the token that the API uses to authenticate -> User.GetUsername()
             var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
 
+             //βρισκει την φωτο apo to relation me ton user me vasi to photoId poy einai stin parametro tiw methodou
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
             if (photo == null) {
                 return NotFound();
             }
 
+            //an eina i main gurnaei mnm oti den epitrepetai na diagrafei
             if (photo.IsMain) {
                 return BadRequest("You cannot delete your main photo");
             }
 
+            //an exei publicId (pou shmainei oti exei perastei sto cloudinary), me vasi to publicId tin diagrafei apo to cloudinary
             if (photo.PublicId != null) {
                 var result = await _photoService.DeletePhotoAsync(photo.PublicId);
                 if (result.Error != null)
@@ -185,8 +220,10 @@ namespace API.Controllers
                 }
             }
 
+            //kanei tracking k ti diagrafi apo to tin vasi (Photo table)
             user.Photos.Remove(photo);
 
+            //swxei tin allagi stin vasi
             if (await _userRepository.SaveAllAsync())
                 {
                     return Ok();

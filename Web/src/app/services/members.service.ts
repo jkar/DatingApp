@@ -50,6 +50,9 @@ export class MembersService {
      return this.userParams;
    }
 
+  // fernei ta members + pagination dedomena  me vasei ta userParams(filtra), kai ta swzei s ena map me key ta filtra k value ta members+pagination
+  //opote otan o xristis kalesei ti methodo, an ta filtra einai idia me kapoia sto map den kanei request sto back alla fernei ta data apo to map
+  //mesw useParams erxontai paginated ta results 
   getMembers(userParams: UseParams) {
     // return this.http.get<Member[]>(this.baseUrl + 'Users', this.httpOptions)
    

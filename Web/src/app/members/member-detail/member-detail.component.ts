@@ -70,6 +70,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
     return imageUrls;
   }
 
+  //unused anymore
   loadMessages() {
     this.messageService.getMessageThred(this.member.username)
       .subscribe(mess => {
