@@ -72,7 +72,7 @@ export class MessageService {
     }
   }
 
-  //epistrfei ola ta mnmta pou sxetizetai o xrisits  olous tous upoloipous (paginated - kai sto header exei key pagination me data gia to pagination)
+  //epistrfei ola ta mnmta pou sxetizetai o xristis me olous tous upoloipous (paginated - kai sto header exei key pagination me data gia to pagination)
   getMessages(pageNumber, pageSize, container) {
     let params = getPaginationHeaders(pageNumber, pageSize);
     params = params.append('Container', container);
@@ -85,7 +85,7 @@ export class MessageService {
     return this.http.get<Message[]>(this.baseUrl + 'Messages/thread/' + username);
   }
 
-  //(ap oti katalava) kalei tin methodo SendMessage apo to messageHub gia na perasei to neo mnm
+  //(ap oti katalava) kalei tin methodo SendMessage apo to messageHub (api) gia na perasei to neo mnm
   //to return einai Promise, giauto k i methodos otan kaleitai exei k then meta
   async sendMessage(username: string, content: string) {
     //return this.http.post<Message>(this.baseUrl + 'messages', {recipientUsername: username, content: content});

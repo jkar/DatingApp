@@ -55,9 +55,12 @@ export class MessagesComponent implements OnInit {
       });
   }
 
+  //otan allazei to pageNumber o xristis, tote kalei to loadMessages gia na ferei ta paginated mnmnta gia to page pou epelexe 
   pageChanged(event: any) {
-    console.log('page')
-    this.pageNumber = event.page;
-    this.loadMessages();
+    if (this.pageNumber !== event.page) {
+      console.log('page', event.page)
+      this.pageNumber = event.page;
+      this.loadMessages();
+    }
   }
 }
