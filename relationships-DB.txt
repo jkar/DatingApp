@@ -1,0 +1,158 @@
+----
+
+Σχέση AppUser-Message
+
+ένας User μπορεί να έχει πολλά μηνύματα (one to many)
+ένα μήνυμα έχει όμως έναν User που το στέλνει (many to one)
+
+οπότε δε χρειάζεται join table (που θέλει στις περιπτώσεις many to many)
+
+Στο Message entity θα έχει σαν πεδία το SenderId (sender) RecipientId (recipient)
+
+Για να μπορεί να τραβήξει απο τη βάση τον User και το relationship με τα μηνύματα που έχει στείλει ως sender
+πρέπει στο entity του AppUser να υπάρχει ένα ICollection<Message> MessagesSent (δλδ μια λίστα με τα μνμτα που έχει στείλει).
+Και αντίστοιχα στο Message ένα AppUser Sender, που είναι ο χρήστης που έχει στείλει το μνμα.
+
+Αντίστοιχα στο DataContext:
+
+            builder.Entity<Message>()
+                .HasOne(u => u.Sender)
+                .WithMany(m => m.MessagesSent)
+                .OnDelete(DeleteBehavior.Restrict);
+
+Που σημαίνει ότι στο entity Μessage, υπάρχει ένας Sender (το πεδίο που ορίσαμε στο Message entity) και έχει πολλά MessagesSent
+(το πεδίο που ορίσαμε στο AppUser entity) (one to many)
+
+Επίσης όμως,
+
+Για να μπορεί να τραβήξει απο τη βάση τον User και το relationship με τα μηνύματα που έχει λάβει ως recipient
+πρέπει στο entity του AppUser να υπάρχει ένα ICollection<Message> MessagesReceived (δλδ μια λίστα με τα μνμτα που έχει λάβει).
+Και αντίστοιχα στο Message ένα AppUser Recipient, που είναι ο χρήστης που λαμβάνει το μνμα.
+
+Αντίστοιχα στο DataContext:
+
+            builder.Entity<Message>()
+                .HasOne(u => u.Recipient)
+                .WithMany(m => m.MessagesReceived)
+                .OnDelete(DeleteBehavior.Restrict);
+
+Που σημαίνει ότι στο entity Μessage, υπάρχει ένας Recipient (το πεδίο που ορίσαμε στο Message entity) και έχει πολλά MessagesReceived
+(το πεδίο που ορίσαμε στο AppUser entity) (one to many)
+
+Μ αυτόν τον τρόπο μπορεί να τραβήξει απο την βάση τα μηνύματα και τον Sender kai Recipient του μηνύματος
+
+π.χ
+
+_context.Messages
+              .Include(u => u.Sender)
+              .Include(u => u.Recipient)
+              .SingleOrDefaultAsync(x => x.Id == id);
+
+
+-------
+
+Σχέση AppUser - UserLikes
+
+ένας χρήστης (AppUser) μπορεί να κάνει πολλά like (UserLike) (one to many)
+ένα Like (UserLike) μπορεί να έχει έναν χρήστη (AppUser) (many to one)
+οπότε δε χρειάζεται join table (που θέλει στις περιπτώσεις many to many)
+
+Στο UserLike θα έχει δύο πεδία τα SourceUserId (ο χρήστης που κάνει Like) LikedUserId (o χρήστης που του κάνανε like)
+
+Για να μπορεί να τραβήξει απο τη βάση τον User και το relationship με τα likes που έχει κάνει ως SourceUser
+πρέπει στο entity του AppUser να υπάρχει ένα ICollection<UserLike> LikedUsers (δλδ μια λίστα με τα likes που έχει κάνει).
+Και αντίστοιχα στο UserLike ένα AppUser SourceUser, που είναι ο χρήστης που έχει κάνει το like.
+
+Αντίστοιχα στο DataContext:
+
+            builder.Entity<UserLike>()
+                .HasOne(s => s.SourceUser)
+                .WithMany(l => l.LikedUsers)
+                .HasForeignKey(s => s.SourceUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+Που σημαίνει ότι στο entity UserLike, υπάρχει ένας SourceUser (το πεδίο που ορίσαμε στο UserLike entity) και έχει πολλούς LikedUsers
+(το πεδίο που ορίσαμε στο AppUser entity) (one to many) με foreignKey το SourceUserId (references to AppUserId )
+
+Επίσης όμως,
+
+Για να μπορεί να τραβήξει απο τη βάση τον User (LikedUser) και το relationship με τα likes που έχει πάρει ως LikedUser
+πρέπει στο entity του AppUser να υπάρχει ένα ICollection<UserLike> LikedByUsers (δλδ μια λίστα με τα likes που του έχουν κάνει).
+Και αντίστοιχα στο UserLike ένα AppUser LikedUser, που είναι ο χρήστης που λαμβάνει τα likes.
+
+Αντίστοιχα στο DataContext:
+
+            builder.Entity<UserLike>()
+                .HasOne(s => s.LikedUser)
+                .WithMany(l => l.LikedByUsers)
+                .HasForeignKey(s => s.LikedUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+Που σημαίνει ότι στο entity UserLike, υπάρχει ένας LikedUser (το πεδίο που ορίσαμε στο UserLike entity) και έχει πολλούς χρήστες που τον κάνανε like (LikedByUsers)
+(το πεδίο που ορίσαμε στο AppUser entity) (one to many) με foreignKey το LikedUserId (references to AppUserId )
+
+π.χ
+
+φέρνει τον χρήστη με βάση το id απο τον πίνακa User και με το include φέρνει και την λίστα με τους χρήστες που έχει κάνει ήδη Like. (αντίστοιχα μπορεί να φέρει τους likedByUsers,
+αυτούς δλδ που τον έχουν κάνει like)
+
+            return await _context.Users
+                    .Include(x => x.LikedUsers)
+                    .FirstOrDefaultAsync(x => x.Id == userId);
+
+
+--------
+
+Σχέση AppUser - AppRole (Many to Many, join table AppUserRole )
+(Τα 3 tables υπάρχουν απο το Identity kai τα κάνουν inherit τα entity που έχω κάνει εγώ)
+
+ένας χρήστης μπορεί να έχει πολλούς ρόλους (Admin, Moderator, Member) (one to many)
+ένας ρόλος μπορεί να έχει πολλούς χρήστες (π.χ πολλοί μπορούν να είναι Members ή Moderators) (one to many)
+άρα η σχέση είναι (Many to Many) και δημιουργούμε ένα Join table το AppUserRole το οποίο έχει πεδία τα (UserId, RoleId).
+
+Για να μπορεί να τραβήξει απο τη βάση τον User (AppUser) και το relationship με τα roles που έχει πάρει ως User
+,δημιουργούμε αρχικά το relationship με το UserRoles κ αφου γίνει και relationship AppRole-UserRole , εχουμε κ relationship μεταξύ
+AppUser-AppRole.
+πρέπει στο entity του AppUser να υπάρχει ένα ICollection<AppUserRole> UserRoles (δλδ μια λίστα με τo UserId kai to RoleId).
+Και αντίστοιχα στο AppUserRole ένα AppUser User, που είναι ο χρήστης που σχετίζεται με το UserId.
+
+            builder.Entity<AppUser>()
+                .HasMany(ur => ur.UserRoles)
+                .WithOne(u => u.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+
+Που σημαίνει ότι στο entity AppUser, υπάρχουν πολλά UserRoles (το πεδίο που ορίσαμε στο AppUser entity) και έχει ένα User στο
+UserRole Entity (το πεδίο που ορίσαμε στο UserRole entity) (many to one) με foreignKey το UserId (references to AppUserId ) 
+
+
+Αντίστοιχα η σχέση μεταξύ AppRole και UserRole η οποιά φέρνει σε σχέση το AppUser με το AppRole.
+πρέπει στο entity του AppRole να υπάρχει ένα ICollection<AppUserRole> UserRoles (δλδ μια λίστα με τo UserId kai to RoleId).
+Και αντίστοιχα στο AppUserRole ένα AppRole Role, που είναι ο ρόλος που σχετίζεται με το RoleId.
+
+            builder.Entity<AppRole>()
+                .HasMany(ur => ur.UserRoles)
+                .WithOne(u => u.Role)
+                .HasForeignKey(ur => ur.RoleId)
+                .IsRequired();
+
+Που σημαίνει ότι στο entity AppRole, υπάρχουν πολλά UserRoles (το πεδίο που ορίσαμε στο AppRole entity) και έχει ένα Role στο
+UserRole Entity (το πεδίο που ορίσαμε στο UserRole entity) (many to one) με foreignKey το RoleId (references to AppRoleId )
+
+π.χ
+
+1o
+
+            var user = await _userManager.Users
+                .Include(r => r.UserRoles)
+                .ThenInclude(r => r.Role).....
+
+φέρνει τον user μαζί με τα userRoles όπου με το thenInclude έχει τους ρόλους του χρήστη
+(γιαυτό κάναμε 3πλο relationship με τα 3 tables)
+
+2o
+
+var roles = await _userManager.GetRolesAsync(user);
+
+ο UserManager του Identity μπορει με την built-in function να φέρει τους ρόλους
+

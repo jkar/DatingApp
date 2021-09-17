@@ -10,6 +10,8 @@ import { NavigationExtras, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { catchError } from 'rxjs/operators';
 
+//δεν έχω βάλει errorHandling στους subscribers γιατί αν γίνει error θα το πιάσει ο interceptor (με το httpRequest),
+// και θα κάνει throw error ή toastr με το κατάλληλο μήνυμα 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
 

@@ -10,6 +10,8 @@ import { AccountService } from '../services/account.service';
 import { User } from '../models/user';
 import { take } from 'rxjs/operators';
 
+
+//Για κάθε httpRequest οι interceptors εκτελούνται, ο συγκεκριμένος περνάει στα headers το token για να γινει authorization με βάση αυτό στον server
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
 

@@ -35,7 +35,7 @@ export class MessageService {
 
     this.hubConnection.start().catch(error => console.log(error));
 
-    //me to pou bei o xristis stin sunomilia, kaleitai to messageHub->OnConnectedAsync (logw tou createHubConnection pou ekteleitai sto tab twn messages sto member-detail),
+    //me to pou bei o xristis stin sunomilia, kaleitai to messageHub->OnConnectedAsync sto back (logw tou createHubConnection pou ekteleitai sto tab twn messages sto member-detail),
     //sto telos mia methodos kalei auton ton listener k pernaei ta messages
     //metaxu twn  xristwn 
     this.hubConnection.on("ReceiveMessageThread", messages => {

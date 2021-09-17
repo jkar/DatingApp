@@ -90,6 +90,8 @@ export class MembersService {
       // })
   }
 
+  //tsekarei prwta sto this.memberCache an uparxei to member me vasi to username, an uparxei to gurnaei san observable me to of kai apofeugei to request ston server
+  //an den to exei, kanei kanonika request ston server gia na parei to member 
   getMember(username: string) {
     //return this.http.get<Member>(this.baseUrl + '/Users' + username, this.httpOptions);
 
@@ -108,7 +110,6 @@ export class MembersService {
         console.log('m', member);
         return of(member);
       }
-
 
     return this.http.get<Member>(this.baseUrl + 'Users/' + username);
   }

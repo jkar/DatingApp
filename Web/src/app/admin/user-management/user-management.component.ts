@@ -15,6 +15,7 @@ export class UserManagementComponent implements OnInit {
 
   constructor(private adminService: AdminService, private modalService: BsModalService) { }
 
+  //τραβάει όλους τους χρήστες με τους ρόλους τους
   ngOnInit(): void {
     this.getUsersWithRoles();
   }
@@ -26,6 +27,7 @@ export class UserManagementComponent implements OnInit {
       });
   }
 
+  //ανοιγει ενα pop up το οποίο γίνεται populate απο τους ρολους του χρήστη (tick σ όσους ανοικει) που διάλεξε ο admin
   openRolesModal(user: User) {
     const config = {
       class: 'modal-dialog-centered',
@@ -36,6 +38,9 @@ export class UserManagementComponent implements OnInit {
       }
     };
 
+    //εδω ο 1ος subscriber περιμένει αν γίνει submit στο RolesModalComponent, κρατάει τους checked roles
+    //και με το this.adminService.updateUserRoles(user.username, rolesToUpdate.roles) στέλει στον server ποιον χρήστη θέλει ο admin Και τι ρόλους θα έχει πλέον
+    //στο subscribe περνάει και τοπικά στο this.user.roles τους νέους ρόλους 
     this.bsModalRef = this.modalService.show(RolesModalComponent, config);
     this.bsModalRef.content.updateSelectedRoles.subscribe(values => {
       const rolesToUpdate = {

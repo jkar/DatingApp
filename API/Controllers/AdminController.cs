@@ -18,6 +18,8 @@ namespace API.Controllers
 
         }
 
+        //φέρνει όλους τους χρήστες μαζί με τους ρόλους τους
+        //με το Authorize- policy επιτρέπει μόνο στον Admin να εκτελέσει τη μέθοδο
         [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("users-with-roles")]
         public async Task<ActionResult> GetUsersWithRoles()
@@ -40,10 +42,12 @@ namespace API.Controllers
         //o admin borei na allaxei rolous s ena xristi me vasi tp username parameter tou xrisit
         //kai ta query params - roles opoy pairnaei auta k svinontai ola ta proigoumena
         //p.x ?roles=Member, Moderator
+        //με το Authorize- policy επιτρέπει μόνο στον Admin να εκτελέσει τη μέθοδο
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost("edit-roles/{username}")]
         public async Task<ActionResult> EditRoles(string username, [FromQuery] string roles)
         {
-            //pairnei apo ta params ta roles k ta kanei array me vasi to , poy uparxei anamesa se kathe role sto param
+            //pairnei apo ta params ta roles k ta kanei array me vasi to ',' poy uparxei anamesa se kathe role sto param
             var selectedRoles = roles.Split(",").ToArray();
 
             //vriksei ton user me vasi to username (parameter)
@@ -69,6 +73,7 @@ namespace API.Controllers
             return Ok(await _userManager.GetRolesAsync(user));
         }
 
+        //με το Authorize- policy επιτρέπει στον Admin και σε Moderator να εκτελέσουν τη μέθοδο
         [Authorize(Policy = "ModeratePhotoRole")]
         [HttpGet("photos-to-moderate")]
         public ActionResult GetPhotosForModeration()
